@@ -8,6 +8,7 @@ require('./db');
 // Handles http requests (express is node js framework)
 // https://www.npmjs.com/package/express
 const express = require('express');
+const session = require('express-session');
 
 // Handles the handlebars
 // https://www.npmjs.com/package/hbs
@@ -15,9 +16,32 @@ const hbs = require('hbs');
 
 const app = express();
 
+const bcrypt = require('bcryptjs');
+
+
 // ℹ️ This function is getting exported from the config folder. It runs most middlewares
 require('./config')(app);
 
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    cookie: {
+        sameSite: true,
+        httpOnly: true,
+        maxAge: 60000,
+    },
+    rolling: true,
+}));
+
+function getLoggedUser (req, res, next) {
+    if (req.session && req.session.currentUser) {
+        app.locals.loggedIn = req.session.currentUser.username;
+    } else {
+        app.locals.loggedIn = '';
+    }
+    next();
+}
+
+app.use(getLoggedUser);
 // default value for title local
 const projectName = 'lab-express-basic-auth';
 const capitalized = string => string[0].toUpperCase() + string.slice(1).toLowerCase();
@@ -27,6 +51,9 @@ app.locals.title = `${capitalized(projectName)}- Generated with Ironlauncher`;
 // 👇 Start handling routes here
 const index = require('./routes/index');
 app.use('/', index);
+
+const auth = require('./routes/auth');
+app.use('/', auth);
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require('./error-handling')(app);

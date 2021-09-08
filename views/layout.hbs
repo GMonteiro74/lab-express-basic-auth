@@ -10,6 +10,24 @@
   </head>
 
   <body>
+    
+    <nav>
+      <ul>
+        {{#if loggedIn}}
+
+          <p>Welcome {{loggedIn}}</p>
+          <li><a href="/main">Check this bad boy!</a></li>
+          <li><a href="/private">Super private stuff here</a></li>
+          <form action="/logout" method="POST">
+          <button type="submit">Logout</button>
+          </form>
+        {{else}}
+        <li><a href="/login">Login</a></li>
+        <li><a href="/signup">Sign up</a></li>
+
+        {{/if}}
+      </ul>
+    </nav>
 
     {{{body}}}
 
